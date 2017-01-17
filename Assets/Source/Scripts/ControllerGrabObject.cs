@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VRTK;
 
 public class ControllerGrabObject : MonoBehaviour
 {
@@ -26,11 +27,13 @@ public class ControllerGrabObject : MonoBehaviour
         {
             return;
         }
+
         collidingObject = col.gameObject;
     }
 
     public void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Hitting a thing: " + other);
         SetCollidingObject(other);
     }
 
@@ -55,7 +58,7 @@ public class ControllerGrabObject : MonoBehaviour
         collidingObject = null;
 
         var joint = AddFixedJoint();
-        joint.connectedBody = objectInHand.GetComponent <Rigidbody>();
+        joint.connectedBody = objectInHand.GetComponent<Rigidbody>();
     }
 
     private FixedJoint AddFixedJoint()
@@ -64,6 +67,31 @@ public class ControllerGrabObject : MonoBehaviour
         fx.breakForce = 20000;
         fx.breakTorque = 20000;
         return fx;
+    }
+
+    private void ControlObject()
+    {
+        if(objectInHand == null)
+        {
+            objectInHand = collidingObject;
+            collidingObject = null;
+
+            var joint = AddFixedJoint();
+            joint.connectedBody = objectInHand.GetComponent<Rigidbody>();
+        }
+        else
+        {
+            if (GetComponent<FixedJoint>())
+            {
+                GetComponent<FixedJoint>().connectedBody = null;
+                Destroy(GetComponent<FixedJoint>());
+
+                objectInHand.GetComponent<Rigidbody>().velocity = Controller.velocity;
+                objectInHand.GetComponent<Rigidbody>().angularVelocity = Controller.angularVelocity;
+            }
+
+            objectInHand = null;
+        }
     }
 
     private void ReleaseObject()
@@ -83,20 +111,21 @@ public class ControllerGrabObject : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-		if(Controller.GetHairTriggerDown())
+        if(Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip))
         {
-            if(collidingObject)
-            {
-                GrabObject();
-            }
+            //if(collidingObject)
+          //  {
+                ControlObject();
+           // }
         }
 
-        if(Controller.GetHairTriggerUp())
-        {
-            if(objectInHand)
-            {
-                ReleaseObject();
-            }
-        }
-	}
+
+        //if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Grip))
+        //{
+        //    if (objectInHand)
+        //    {
+        //        ReleaseObject();
+        //    }
+        //}
+    }
 }
