@@ -33,7 +33,6 @@ public class ControllerGrabObject : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Hitting a thing: " + other);
         SetCollidingObject(other);
     }
 
